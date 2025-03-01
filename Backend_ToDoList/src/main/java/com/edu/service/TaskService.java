@@ -51,6 +51,7 @@ public class TaskService {
                 .orElseThrow(() -> new RuntimeException("Task not found or unauthorized"));
         modelMapper.map(taskDTO, task);
         Task updatedTask = taskRepository.save(task);
+        task.setCompleted(taskDTO.isCompleted());
         return modelMapper.map(updatedTask, TaskDTO.class);
     }
 
