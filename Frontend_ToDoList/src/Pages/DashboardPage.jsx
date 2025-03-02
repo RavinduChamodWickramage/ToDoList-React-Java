@@ -31,7 +31,13 @@ function DashboardPage() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setTasks(response.data);
+
+      const tasksWithCorrectField = response.data.map((task) => ({
+        ...task,
+        isCompleted: task.completed,
+      }));
+
+      setTasks(tasksWithCorrectField);
     } catch (err) {
       console.error(
         "Failed to fetch tasks:",
@@ -88,34 +94,23 @@ function DashboardPage() {
         return;
       }
 
-      const userId = user.id;
-
-      const taskToUpdate = tasks.find((task) => task.id === taskId);
-      if (!taskToUpdate) {
-        setError("Task not found.");
-        return;
-      }
-
-      const updatedTask = {
-        ...taskToUpdate,
-        isCompleted: newStatus === "Completed",
-      };
-
-      await axios.put(
-        `http://localhost:8080/api/tasks/${taskId}?userId=${userId}`,
-        updatedTask,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const response = await axios.patch(
+        `http://localhost:8080/api/tasks/${taskId}/status?userId=${user.id}`,
+        { isCompleted: newStatus === "Completed" },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      const updatedTask = response.data;
 
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
-          task.id === taskId
-            ? { ...task, isCompleted: newStatus === "Completed" }
+          task.id === updatedTask.id
+            ? { ...task, isCompleted: updatedTask.completed }
             : task
         )
       );
+
+      console.log("Task status updated:", updatedTask);
     } catch (err) {
       console.error(
         "Failed to update task status:",
@@ -154,25 +149,25 @@ function DashboardPage() {
             <p className="text-center">Loading tasks...</p>
           ) : (
             <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
-              <table className="w-full border-collapse">
+              <table className="w-full border-collapse ">
                 <thead>
                   <tr className="bg-gray-200 dark:bg-gray-700">
-                    <th className="p-4 border dark:border-gray-600 text-left text-gray-900 dark:text-white">
+                    <th className="p-4 border dark:border-gray-600 text-center text-gray-900 dark:text-white">
                       #
                     </th>
-                    <th className="p-4 border dark:border-gray-600 text-left text-gray-900 dark:text-white">
+                    <th className="p-4 border dark:border-gray-600 text-center text-gray-900 dark:text-white">
                       Title
                     </th>
-                    <th className="p-4 border dark:border-gray-600 text-left text-gray-900 dark:text-white">
+                    <th className="p-4 border dark:border-gray-600 text-center text-gray-900 dark:text-white">
                       Description
                     </th>
-                    <th className="p-4 border dark:border-gray-600 text-left text-gray-900 dark:text-white">
+                    <th className="p-4 border dark:border-gray-600 text-center text-gray-900 dark:text-white">
                       Due Date
                     </th>
-                    <th className="p-4 border dark:border-gray-600 text-left text-gray-900 dark:text-white">
+                    <th className="p-4 border dark:border-gray-600 text-center text-gray-900 dark:text-white">
                       Status
                     </th>
-                    <th className="p-4 border dark:border-gray-600 text-left text-gray-900 dark:text-white">
+                    <th className="p-4 border dark:border-gray-600 text-center text-gray-900 dark:text-white">
                       Actions
                     </th>
                   </tr>
@@ -211,8 +206,8 @@ function DashboardPage() {
                           <option value="Completed">Completed</option>
                         </select>
                       </td>
-                      <td className="p-4 border dark:border-gray-600 text-gray-900 dark:text-white">
-                        <div className="flex items-center gap-2">
+                      <td className="p-4 border dark:border-gray-600 text-gray-900 dark:text-white text-center">
+                        <div className="flex justify-center items-center gap-2">
                           <button
                             onClick={() => navigate(`/task/${task.id}`)}
                             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 flex items-center gap-2"

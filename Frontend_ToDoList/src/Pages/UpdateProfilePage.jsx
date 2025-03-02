@@ -28,7 +28,7 @@ function UpdateProfilePage() {
       });
       setFirstName(response.data.firstName || "");
       setLastName(response.data.lastName || "");
-      setEmail(response.data.email || "");
+      setEmail(response.data.username || "");
     } catch (err) {
       console.error("Failed to fetch user details:", err);
     }
@@ -201,7 +201,6 @@ function UpdateProfilePage() {
                 </div>
               </div>
 
-              {/* Notice for Password Fields */}
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <IoInformationCircleOutline className="w-4 h-4" />
                 <p>

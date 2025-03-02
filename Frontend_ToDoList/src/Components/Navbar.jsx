@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import "../App.css";
@@ -7,11 +7,35 @@ import { IoLogOut, IoPersonCircle } from "react-icons/io5";
 function Navbar() {
   const [user, setUser] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [dropdownWidth, setDropdownWidth] = useState(220);
+  const dropdownRef = useRef(null);
+  const usernameRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchUserDetails();
-  }, []);
+  });
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
+
+  useEffect(() => {
+    if (isDropdownOpen && usernameRef.current) {
+      const usernameWidth = usernameRef.current.offsetWidth;
+      setDropdownWidth(Math.max(192, usernameWidth + 32));
+    }
+  }, [isDropdownOpen]);
 
   const fetchUserDetails = async () => {
     try {
@@ -51,6 +75,10 @@ function Navbar() {
     return `${firstLetter}${lastLetter}`;
   };
 
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 py-4 backdrop-blur-2xl backdrop-saturate-200 bg-white/80 border-white/80 w-full max-w-full rounded-none px-4 text-white border-0">
@@ -59,19 +87,24 @@ function Navbar() {
 
           {user && (
             <div className="flex items-center gap-4">
-              <div
-                className="relative"
-                onMouseEnter={() => setIsDropdownOpen(true)}
-                onMouseLeave={() => setIsDropdownOpen(false)}
-              >
-                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold cursor-pointer">
+              <div className="relative" ref={dropdownRef}>
+                <div
+                  className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold cursor-pointer"
+                  onClick={toggleDropdown}
+                >
                   {generateAvatar(user.firstName, user.lastName)}
                 </div>
 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg dark:bg-gray-800">
+                  <div
+                    className="absolute right-0 mt-2 bg-white rounded-lg shadow-lg dark:bg-gray-800 z-10 "
+                    style={{ width: `${dropdownWidth}px` }}
+                  >
                     <div className="p-4">
-                      <p className="text-sm text-gray-900 dark:text-white">
+                      <p
+                        className="text-sm text-gray-900 dark:text-white"
+                        ref={usernameRef}
+                      >
                         {user.firstName} {user.lastName}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
