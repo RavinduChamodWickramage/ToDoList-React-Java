@@ -8,6 +8,7 @@ import com.edu.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +26,7 @@ public class TaskService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Transactional
     public List<TaskDTO> getTasksByUserId(Long userId) {
         return taskRepository.findByUserId(userId)
                 .stream()
@@ -32,11 +34,13 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public Optional<TaskDTO> getTaskByIdAndUserId(Long taskId, Long userId) {
         return taskRepository.findByIdAndUserId(taskId, userId)
                 .map(task -> modelMapper.map(task, TaskDTO.class));
     }
 
+    @Transactional
     public TaskDTO createTask(TaskDTO taskDTO, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -46,15 +50,27 @@ public class TaskService {
         return modelMapper.map(savedTask, TaskDTO.class);
     }
 
+    @Transactional
     public TaskDTO updateTask(TaskDTO taskDTO, Long userId) {
         Task task = taskRepository.findByIdAndUserId(taskDTO.getId(), userId)
                 .orElseThrow(() -> new RuntimeException("Task not found or unauthorized"));
         modelMapper.map(taskDTO, task);
         Task updatedTask = taskRepository.save(task);
-        task.setCompleted(taskDTO.isCompleted());
         return modelMapper.map(updatedTask, TaskDTO.class);
     }
 
+    @Transactional
+    public TaskDTO updateTaskStatus(Long taskId, Long userId, boolean isCompleted) {
+        Task task = taskRepository.findByIdAndUserId(taskId, userId)
+                .orElseThrow(() -> new RuntimeException("Task not found or unauthorized"));
+
+        task.setCompleted(isCompleted);
+        Task updatedTask = taskRepository.save(task);
+
+        return modelMapper.map(updatedTask, TaskDTO.class);
+    }
+
+    @Transactional
     public void deleteTask(Long taskId, Long userId) {
         Task task = taskRepository.findByIdAndUserId(taskId, userId)
                 .orElseThrow(() -> new RuntimeException("Task not found or unauthorized"));

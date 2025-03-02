@@ -1,6 +1,6 @@
 package com.edu.controller;
 
-import com.edu.dto.LoginRequest;
+import com.edu.dto.LoginRequestDTO;
 import com.edu.dto.UserDTO;
 import com.edu.service.AuthService;
 import com.edu.service.UserService;
@@ -18,8 +18,8 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginRequest loginRequest) {
-        return authService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
+    public String login(@RequestBody LoginRequestDTO loginRequestDTO) {
+        return authService.authenticateUser(loginRequestDTO.getUsername(), loginRequestDTO.getPassword());
     }
 
     @PostMapping("/signup")
